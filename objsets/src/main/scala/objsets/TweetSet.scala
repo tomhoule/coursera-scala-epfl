@@ -41,12 +41,12 @@ abstract class TweetSet {
    * Question: Can we implment this method here, or should it remain abstract
    * and be implemented in the subclasses?
    */
-    def filter(p: Tweet => Boolean): TweetSet = filterAcc(p, this)
+    def filter(p: Tweet => Boolean): TweetSet = filterAcc(p, new Empty())
 
   /**
    * This is a helper method for `filter` that propagetes the accumulated tweets.
    */
-  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet
+    def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet
 
   /**
    * Returns a new `TweetSet` that is the union of `TweetSet`s `this` and `that`.
@@ -66,7 +66,8 @@ abstract class TweetSet {
    * and be implemented in the subclasses?
    */
     def mostRetweeted: Tweet
-    def mostRetweets: Int
+
+    def isEmpty: Boolean
 
   /**
    * Returns a list containing all tweets of this set, sorted by retweet count
@@ -108,12 +109,12 @@ abstract class TweetSet {
 }
 
 class Empty extends TweetSet {
-  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = this
-
+  def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet = acc
+  def isEmpty = true
   def union(that: TweetSet): TweetSet = that
 
   def mostRetweeted: Nothing = throw new java.util.NoSuchElementException()
-  def mostRetweets: Int = -1
+  def maxRT(that: TweetSet) = that
 
   def descendingByRetweet: TweetList = Nil
   /**
@@ -132,21 +133,21 @@ class Empty extends TweetSet {
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
 
     def filterAcc(p: Tweet => Boolean, acc: TweetSet): TweetSet =
-      if (p(elem)) new NonEmpty(elem, acc.filterAcc(p, left), acc.filterAcc(p, right))
-      else left.filterAcc(p, acc).union(right.filterAcc(p, acc))
+      if (p(elem)) left.union(right).filterAcc(p, acc.incl(elem))
+      else left.union(right).filterAcc(p, acc)
 
     def union(that: TweetSet): TweetSet =
-      that.union(left).union(right).incl(elem)
+      left.union(right.union(that)).incl(elem)
 
-    def mostRetweets: Int =
-      if (elem.retweets > left.mostRetweets && elem.retweets > right.mostRetweets) elem.retweets
-      else if (left.mostRetweets > right.mostRetweets) left.mostRetweets
-      else right.mostRetweets
+    def isEmpty = false
+
+    def maxTweet(a: Tweet, b: Tweet): Tweet = if (a.retweets > b.retweets) a else b
 
     def mostRetweeted: Tweet =
-      if (elem.retweets > left.mostRetweets && elem.retweets > right.mostRetweets) elem
-      else if (left.mostRetweets > right.mostRetweets) left.mostRetweeted
-      else right.mostRetweeted
+      if (left.isEmpty && right.isEmpty) elem
+      else if (left.isEmpty && !right.isEmpty) maxTweet(elem, right.mostRetweeted)
+      else if (!left.isEmpty && right.isEmpty) maxTweet(elem, left.mostRetweeted)
+      else maxTweet(elem, maxTweet(left.mostRetweeted, right.mostRetweeted))
 
     def descendingByRetweet: TweetList = {
       val max = this.mostRetweeted

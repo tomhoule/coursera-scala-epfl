@@ -1,4 +1,5 @@
 package objsets
+import TweetReader._
 
 import org.scalatest.FunSuite
 
@@ -8,6 +9,7 @@ import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
 class TweetSetSuite extends FunSuite {
+
   trait TestSets {
     val set1 = new Empty
     val set2 = set1.incl(new Tweet("a", "a body", 20))
@@ -43,6 +45,12 @@ class TweetSetSuite extends FunSuite {
   test("filter: 20 on set5") {
     new TestSets {
       assert(size(set5.filter(tw => tw.retweets == 20)) === 2)
+    }
+  }
+
+  test("filter whole dataset") {
+    new TestSets {
+      assert(size(allTweets.filter(tw => tw.retweets == 2)) === 27)
     }
   }
 

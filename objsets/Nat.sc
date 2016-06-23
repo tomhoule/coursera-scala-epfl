@@ -9,30 +9,19 @@ abstract class Nat {
 class Zero extends Nat {
   def isZero = true
   def predecessor: Nothing = throw new java.lang.ArithmeticException
-  def successor = new One()
+  def successor = new Succ(this)
   def + (that: Nat) = that
   def - (that: Nat) = if (that.isZero) this else throw new java.lang.ArithmeticException
 }
 
-class OneMore(prev: Nat) extends Nat {
+class Succ(n: Nat) extends Nat {
   def isZero = false
-  def predecessor = prev
-  def successor = new OneMore(this)
-  def + (that: Nat) = if (that.isZero) this else new OneMore(that + prev)
-  def - (that: Nat) = if (that.isZero) this else that - prev
+  def predecessor = n
+  def successor = new Succ(this)
+  def + (that: Nat) = if (that.isZero) this else new Succ(that + n)
+  def - (that: Nat) = if (that.isZero) this else n - that.predecessor
 }
 
 
-class One extends Nat {
-  def isZero = false
-  def predecessor = new Zero
-  def successor = new OneMore(this)
-  def + (that: Nat) = if (that.isZero) this else that.successor
-  def - (that: Nat) = if (that.isZero) this else that.predecessor
-}
-
-
-new Zero() + new One()
-new One() - new Zero() - new One()
-
-new One() + new One() + new One() - new One
+new Succ(new Zero()) + new Succ(new Zero) - new Succ(new Zero)
+(new Succ(new Succ(new Zero)) - new Succ(new Zero)) - new Succ(new Zero)

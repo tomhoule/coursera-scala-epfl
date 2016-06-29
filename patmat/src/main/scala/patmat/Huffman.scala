@@ -91,7 +91,8 @@ object Huffman {
    * head of the list should have the smallest weight), where the weight
    * of a leaf is the frequency of the character.
    */
-    def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] = ???
+    def makeOrderedLeafList(freqs: List[(Char, Int)]): List[Leaf] =
+      freqs.sortWith((fst, snd) => fst._2 < snd._2).map(f => Leaf(f._1, f._2))
   
   /**
    * Checks whether the list `trees` contains only one single code tree.
@@ -114,8 +115,9 @@ object Huffman {
    * unchanged.
    */
     def combine(trees: List[CodeTree]): List[CodeTree] = trees match {
+      case Nil => Nil
       case x :: Nil => trees
-      case x :: xs => ???
+      case x :: xx :: xs => Fork(x, xx, chars(x) ::: chars(xx), weight(x) + weight(xx)) :: xs
     }
   
   /**
@@ -135,7 +137,10 @@ object Huffman {
    *    the example invocation. Also define the return type of the `until` function.
    *  - try to find sensible parameter names for `xxx`, `yyy` and `zzz`.
    */
-    def until(xxx: ???, yyy: ???)(zzz: ???): ??? = ???
+    def until(singleton: List[CodeTree] => Boolean, combine: List[CodeTree] => List[CodeTree])
+             (trees: List[CodeTree]): List[CodeTree] =
+    if (singleton(trees)) trees
+    else until(singleton, combine)(combine(trees))
   
   /**
    * This function creates a code tree which is optimal to encode the text `chars`.
@@ -143,7 +148,7 @@ object Huffman {
    * The parameter `chars` is an arbitrary text. This function extracts the character
    * frequencies from that text and creates a code tree based on them.
    */
-    def createCodeTree(chars: List[Char]): CodeTree = ???
+    def createCodeTree(chars: List[Char]): CodeTree = until(singleton, combine)(makeOrderedLeafList(times(chars))).head
   
 
   // Part 3: Decoding
@@ -166,7 +171,7 @@ object Huffman {
   /**
    * What does the secret message say? Can you decode it?
    * For the decoding use the `frenchCode' Huffman tree defined above.
-   */
+    **/
   val secret: List[Bit] = List(0,0,1,1,1,0,1,0,1,1,1,0,0,1,1,0,1,0,0,1,1,0,1,0,1,1,0,0,1,1,1,1,1,0,1,0,1,1,0,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,1)
 
   /**

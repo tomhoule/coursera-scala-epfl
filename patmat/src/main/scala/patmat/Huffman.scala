@@ -75,7 +75,14 @@ object Huffman {
    *       println("integer is  : "+ theInt)
    *   }
    */
-    def times(chars: List[Char]): List[(Char, Int)] = ???
+    def times(chars: List[Char]): List[(Char, Int)] = chars match
+    {
+      case x :: xs => {
+        val (occurrences, rest) = chars.partition(c => x == c)
+        (x, occurrences.length) :: times(rest)
+      }
+      case Nil => List()
+    }
   
   /**
    * Returns a list of `Leaf` nodes for a given frequency table `freqs`.
@@ -89,7 +96,10 @@ object Huffman {
   /**
    * Checks whether the list `trees` contains only one single code tree.
    */
-    def singleton(trees: List[CodeTree]): Boolean = ???
+    def singleton(trees: List[CodeTree]): Boolean = trees match {
+      case x :: Nil => true
+      case _ => false
+    }
   
   /**
    * The parameter `trees` of this function is a list of code trees ordered
@@ -103,7 +113,10 @@ object Huffman {
    * If `trees` is a list of less than two elements, that list should be returned
    * unchanged.
    */
-    def combine(trees: List[CodeTree]): List[CodeTree] = ???
+    def combine(trees: List[CodeTree]): List[CodeTree] = trees match {
+      case x :: Nil => trees
+      case x :: xs => ???
+    }
   
   /**
    * This function will be called in the following way:

@@ -33,6 +33,23 @@ class HuffmanSuite extends FunSuite {
     assert(string2Chars("hello, world") === List('h', 'e', 'l', 'l', 'o', ',', ' ', 'w', 'o', 'r', 'l', 'd'))
   }
 
+  test("times in a simple list") {
+    assert(times(string2Chars("carrotcake"))
+      === List(('c', 2), ('a', 2), ('r', 2), ('o', 1), ('t', 1), ('k', 1), ('e', 1)))
+  }
+
+  test("singleton") {
+    new TestTrees {
+      assert(singleton(List(t1)) === true)
+    }
+  }
+
+  test("not singleton") {
+    new TestTrees {
+      assert(singleton(List(t1, t2)) === false)
+    }
+  }
+
 
   test("makeOrderedLeafList for some frequency table") {
     assert(makeOrderedLeafList(List(('t', 2), ('e', 1), ('x', 3))) === List(Leaf('e',1), Leaf('t',2), Leaf('x',3)))

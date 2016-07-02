@@ -29,10 +29,10 @@ object Huffman {
     case Leaf(_, w) => w
   }
   
-    def chars(tree: CodeTree): List[Char] = tree match {
-      case Fork(l, r, _, _) => chars(l) ::: chars(r)
-      case Leaf(c, _) => List(c)
-    }
+  def chars(tree: CodeTree): List[Char] = tree match {
+    case Fork(l, r, _, _) => chars(l) ::: chars(r)
+    case Leaf(c, _) => List(c)
+  }
   
   def makeCodeTree(left: CodeTree, right: CodeTree) =
     Fork(left, right, chars(left) ::: chars(right), weight(left) + weight(right))
@@ -159,7 +159,21 @@ object Huffman {
    * This function decodes the bit sequence `bits` using the code tree `tree` and returns
    * the resulting list of characters.
    */
-    def decode(tree: CodeTree, bits: List[Bit]): List[Char] = ???
+  def decode(tree: CodeTree, bits: List[Bit]): List[Char] = {
+    def decodeRec(currentTree: CodeTree, bits: List[Bit]): List[Char] = {
+      currentTree match {
+        case Fork(l, r, _, _) => bits.head match {
+          case 0 => decodeRec(l, bits.tail)
+          case 1 => decodeRec(r, bits.tail)
+        }
+        case Leaf(c, _) =>
+          if (bits.isEmpty) List(c)
+          else c :: decodeRec(tree, bits)
+      }
+    }
+
+    decodeRec(tree, bits)
+  }
   
   /**
    * A Huffman coding tree for the French language.
@@ -177,16 +191,38 @@ object Huffman {
   /**
    * Write a function that returns the decoded secret
    */
-    def decodedSecret: List[Char] = ???
-  
+    def decodedSecret: List[Char] = decode(frenchCode, secret)
 
   // Part 4a: Encoding using Huffman tree
+
+  sealed abstract class Direction
+    case object Left extends Direction
+    case object Right extends Direction
 
   /**
    * This function encodes `text` using the code tree `tree`
    * into a sequence of bits.
    */
-    def encode(tree: CodeTree)(text: List[Char]): List[Bit] = ???
+    def encode(tree: CodeTree)(text: List[Char]): List[Bit] = {
+        def determineDirection(fork: Fork, character: Char): Direction = {
+          fork.left match {
+            case Leaf(c, _) => if (c == character) Left else Right
+            case Fork(_, _, c, _) => if (c.contains(character)) Left else Right
+          }
+        }
+
+        def encodeRec(currentTree: CodeTree, text: List[Char]): List[Bit] = {
+          if (text.isEmpty) List()
+          else currentTree match {
+              case Leaf(_, _) => encodeRec(tree, text.tail)
+              case f @ Fork(l, r, c, _) => determineDirection(f, text.head) match {
+                case Left => 0 :: encodeRec(l, text)
+                case Right => 1 :: encodeRec(r, text)
+              }
+            }
+        }
+      encodeRec(tree, text)
+    }
   
   // Part 4b: Encoding using code table
 

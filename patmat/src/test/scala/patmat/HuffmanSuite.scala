@@ -68,4 +68,8 @@ class HuffmanSuite extends FunSuite {
     }
   }
 
+  test("test decoding") {
+    assert(decodedSecret.mkString === "huffmanestcool")
+  }
+
 }

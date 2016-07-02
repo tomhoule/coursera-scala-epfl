@@ -71,5 +71,23 @@ class HuffmanSuite extends FunSuite {
   test("test decoding") {
     assert(decodedSecret.mkString === "huffmanestcool")
   }
+  
+  test("createCodeTree gives the expected output on small phrase") {
+    assert(createCodeTree(List('c', 'o', 'u', 'c', 'o', 'u')) === Fork(Fork(Leaf('c', 2), Leaf('o', 2), List('c', 'o'), 4), Leaf('u', 2), List('c', 'o', 'u'), 6))
+  }
 
+  test("makeOrderedLeafList works") {
+    assert(makeOrderedLeafList(List(('a', 5), ('b', 12), ('c', 2), ('e', 44)))
+      === List(Leaf('c', 2), Leaf('a', 5), Leaf('b', 12), Leaf('e', 44)))
+  }
+
+  test("createCodeTree’s total weight is right") {
+    val example = List('c', 'a', 'r', 'r', 'o', 't', 'c', 'a', 'k', 'e')
+    assert(weight(createCodeTree(example)) === times(example).fold((null, 0))((a, b) => (null, a._2 + b._2))._2)
+  }
+
+  test("explore what happens with long strings") {
+    val longText = string2Chars("Outside Haskell, you either target the backends directly or use something like ArrayFire, but my impression is that nothing provides a nicer overall abstraction with high-level and yet perfomant language, while being embedded in an aesthetically pleasing (subjective) language. That said, I may be unaware of something better.")
+    assert(makeOrderedLeafList(times(longText)) !== null)
+  }
 }

@@ -117,9 +117,7 @@ object Huffman {
     def combine(trees: List[CodeTree]): List[CodeTree] = trees match {
       case Nil => Nil
       case x :: Nil => trees
-      case x :: xx :: xs =>
-        if (weight(x) <= weight(xx)) insert(makeCodeTree(x, xx), combine(xs))
-        else insert(makeCodeTree(xx, x), combine(xs))
+      case x :: xx :: xs => (makeCodeTree(x, xx) :: xs).sortWith((a, b) => weight(a) <= weight(b))
     }
 
   def insert(tree: CodeTree, trees: List[CodeTree]): List[CodeTree] = trees match {

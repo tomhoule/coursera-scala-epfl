@@ -1,11 +1,8 @@
 package streams
 
 import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-
-import Bloxorz._
 
 @RunWith(classOf[JUnitRunner])
 class BloxorzSuite extends FunSuite {
@@ -23,6 +20,35 @@ class BloxorzSuite extends FunSuite {
         case Up => block.up
         case Down => block.down
       }
+    }
+  }
+
+  trait CustomLevel extends SolutionChecker {
+    val level =
+      """
+         ---S
+        |---o
+        |---o
+        |---T
+      """.stripMargin
+
+  }
+
+  test("findChar on custom level") {
+    new CustomLevel {
+      assert(goal === Pos(4, 3))
+    }
+  }
+
+  test("terrain on custom level") {
+    new CustomLevel {
+      assert(terrain(goal))
+    }
+  }
+
+  test("optimal solution for cutom level") {
+    new CustomLevel {
+      assert(solve(solution) === Block(goal, goal))
     }
   }
 
@@ -56,12 +82,37 @@ class BloxorzSuite extends FunSuite {
     }
   }
 
+  test("goal level 1") {
+    new Level1 {
+      assert(goal == Pos(4, 7))
+    }
+  }
+
 	test("findChar level 1") {
     new Level1 {
       assert(startPos == Pos(1,1))
     }
   }
 
+  test("neighborsWithHistory for level 1") {
+    new Level1 {
+      assert(neighborsWithHistory(Block(startPos, startPos), List(Up, Down))
+      === Stream((Block(Pos(1, 2), Pos(1, 3)), List(Right, Up, Down)), (Block(Pos(2, 1), Pos(3, 1)), List(Down, Up, Down))))
+    }
+  }
+
+  test("newNeighborsOnly for level 1") {
+    new Level1 {
+      assert(newNeighborsOnly(neighborsWithHistory(Block(startPos, startPos), List(Up, Down)), Set(Block(Pos(1, 2), Pos(1, 3))))
+      === Stream((Block(Pos(2, 1), Pos(3, 1)), List(Down, Up, Down))))
+    }
+  }
+
+  test("done for level 1") {
+    new Level1 {
+      assert(done(Block(Pos(4, 7), Pos(4, 7))))
+    }
+  }
 
 	test("optimal solution for level 1") {
     new Level1 {
@@ -75,5 +126,4 @@ class BloxorzSuite extends FunSuite {
       assert(solution.length == optsolution.length)
     }
   }
-
 }

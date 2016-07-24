@@ -1,6 +1,7 @@
 package streams
 
 import common._
+import sun.font.TrueTypeFont
 
 /**
  * This component implements a parser to define terrains from a
@@ -34,6 +35,16 @@ trait StringParserTerrain extends GameDef {
    */
   val level: String
 
+  def isOnTerrain(c: Char): Boolean = c match {
+    case 'T' => true
+    case 'o' => true
+    case 'S' => true
+    case _ => false
+  }
+
+  def trimEmptyLines(levelVector: Vector[Vector[Char]]): Vector[Vector[Char]] = levelVector
+//    levelVector filter (vec => vec exists (c => isOnTerrain(c)))
+
   /**
    * This method returns terrain function that represents the terrain
    * in `levelVector`. The vector contains parsed version of the `level`
@@ -52,8 +63,14 @@ trait StringParserTerrain extends GameDef {
    * a valid position (not a '-' character) inside the terrain described
    * by `levelVector`.
    */
-  def terrainFunction(levelVector: Vector[Vector[Char]]): Pos => Boolean = ???
-
+  def terrainFunction(levelVector: Vector[Vector[Char]]): Pos => Boolean = pos => {
+    println("Terrain for pos " + pos.toString())
+    pos match {
+      case Pos(x, y) =>
+        if (x < 0 || y < 0 || x >= levelVector.length || y >= levelVector(x).length) false
+        else isOnTerrain(trimEmptyLines(levelVector)(x)(y))
+    }
+  }
   /**
    * This function should return the position of character `c` in the
    * terrain described by `levelVector`. You can assume that the `c`
@@ -62,7 +79,12 @@ trait StringParserTerrain extends GameDef {
    * Hint: you can use the functions `indexWhere` and / or `indexOf` of the
    * `Vector` class
    */
-  def findChar(c: Char, levelVector: Vector[Vector[Char]]): Pos = ???
+  def findChar(c: Char, levelVector: Vector[Vector[Char]]): Pos = {
+    val validLines = trimEmptyLines(levelVector)
+    val row = validLines indexWhere (vec => (vec indexOf c) > -1)
+    val col = validLines(row) indexOf c
+    Pos(row, col)
+  }
 
   private lazy val vector: Vector[Vector[Char]] =
     Vector(level.split("\n").map(str => Vector(str: _*)): _*)

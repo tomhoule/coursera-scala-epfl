@@ -74,9 +74,9 @@ trait Solver extends GameDef {
     else {
       // The neighbors of each path in initial, with a path of longer length by 1
       def expandedPaths: Stream[(Block, List[Move])] =
-        initial.flatMap(path => newNeighborsOnly(neighborsWithHistory(path._1, path._2), explored + path._1))
-      // Initial lazily augmented with all the neighbors and the neighbor's neighbors ad infinitum
-      initial #::: expandedPaths #::: from(expandedPaths, explored ++ (expandedPaths map (path => path._1)))
+        initial.flatMap(path => newNeighborsOnly(neighborsWithHistory(path._1, path._2), explored))
+        // Initial lazily augmented with all the neighbors and the neighbor's neighbors ad infinitum
+        initial #::: expandedPaths #::: from(expandedPaths, explored ++ (expandedPaths map (path => path._1)))
     }
   }
 
@@ -84,7 +84,7 @@ trait Solver extends GameDef {
    * The stream of all paths that begin at the starting block.
    */
   lazy val pathsFromStart: Stream[(Block, List[Move])] =
-    from(Stream((Block(startPos, startPos), List())), Set(Block(startPos, startPos)))
+    from(Stream((Block(startPos, startPos), List())), Set())
 
   /**
    * Returns a stream of all possible pairs of the goal block along
@@ -100,5 +100,7 @@ trait Solver extends GameDef {
    * the first move that the player should perform from the starting
    * position.
    */
-  lazy val solution: List[Move] = pathsToGoal.head._2
+  lazy val solution: List[Move] =
+    if (pathsToGoal.isEmpty) List()
+    else pathsToGoal.head._2
 }

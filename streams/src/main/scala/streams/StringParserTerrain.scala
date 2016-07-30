@@ -1,7 +1,6 @@
 package streams
 
 import common._
-import sun.font.TrueTypeFont
 
 /**
  * This component implements a parser to define terrains from a
@@ -64,7 +63,6 @@ trait StringParserTerrain extends GameDef {
    * by `levelVector`.
    */
   def terrainFunction(levelVector: Vector[Vector[Char]]): Pos => Boolean = pos => {
-    println("Terrain for pos " + pos.toString())
     pos match {
       case Pos(x, y) =>
         if (x < 0 || y < 0 || x >= levelVector.length || y >= levelVector(x).length) false

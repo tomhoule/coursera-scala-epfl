@@ -101,6 +101,6 @@ trait Solver extends GameDef {
    * position.
    */
   lazy val solution: List[Move] =
-    if (pathsToGoal.isEmpty) List()
+    if (pathsToGoal.isEmpty) $List()
     else pathsToGoal.head._2
 }

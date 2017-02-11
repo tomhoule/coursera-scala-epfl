@@ -43,8 +43,26 @@ object VerticalBoxBlur {
    *  bottom.
    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-    // TODO implement this method using the `boxBlurKernel` method
-    ???
+    var xIndex = from
+    var yIndex = 0
+    while (xIndex < end) {
+      while (yIndex < src.height) {
+        val blurredPixel: RGBA = scalashop.boxBlurKernel(src, xIndex, yIndex, radius)
+        dst.update(xIndex, yIndex, blurredPixel)
+        yIndex += 1
+      }
+      yIndex = 0
+      xIndex += 1
+    }
+  }
+
+  def parBlurRanges(src: Img, numTasks: Int): List[(Int, Int)] = {
+    val increments = if (src.width / numTasks == 0) 1 else src.width / numTasks
+    val splittingPoints: List[Int] = (0 to src.width by increments).toList
+    val stripeUpperBounds =
+      if (src.width % numTasks == 0) splittingPoints.tail
+      else List.concat(splittingPoints.tail, List(src.width))
+    splittingPoints.zip(stripeUpperBounds)
   }
 
   /** Blurs the columns of the source image in parallel using `numTasks` tasks.
@@ -54,8 +72,10 @@ object VerticalBoxBlur {
    *  columns.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-    // TODO implement using the `task` construct and the `blur` method
-    ???
+    val ranges = this.parBlurRanges(src, numTasks)
+    val tasks = ranges.map((range: (Int, Int)) => task {
+      this.blur(src, dst, range._1, range._2, radius)
+    })
+    tasks.foreach((task) => task.join())
   }
-
 }

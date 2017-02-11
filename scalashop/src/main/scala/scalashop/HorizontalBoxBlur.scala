@@ -3,6 +3,8 @@ package scalashop
 import org.scalameter._
 import common._
 
+import scala.collection.parallel.Task
+
 object HorizontalBoxBlurRunner {
 
   val standardConfig = config(
@@ -42,9 +44,25 @@ object HorizontalBoxBlur {
    *  Within each row, `blur` traverses the pixels by going from left to right.
    */
   def blur(src: Img, dst: Img, from: Int, end: Int, radius: Int): Unit = {
-  // TODO implement this method using the `boxBlurKernel` method
+    var xIndex = 0
+    var yIndex = from
+    while (yIndex < end) {
+      while (xIndex < src.width) {
+        dst.update(xIndex, yIndex, scalashop.boxBlurKernel(src, xIndex, yIndex, radius))
+        xIndex += 1
+      }
+      xIndex = 0
+      yIndex += 1
+    }
+  }
 
-  ???
+  def parBlurRanges(src: Img, numTasks: Int): List[(Int, Int)] = {
+    val increments = if (src.height / numTasks == 0) 1 else src.height / numTasks
+    val splittingPoints: List[Int] = (0 to src.height by increments).toList
+    val stripeUpperBounds =
+      if (src.height % numTasks == 0) splittingPoints.tail
+      else List.concat(splittingPoints.tail, List(src.height))
+    splittingPoints.zip(stripeUpperBounds)
   }
 
   /** Blurs the rows of the source image in parallel using `numTasks` tasks.
@@ -54,9 +72,10 @@ object HorizontalBoxBlur {
    *  rows.
    */
   def parBlur(src: Img, dst: Img, numTasks: Int, radius: Int): Unit = {
-  // TODO implement using the `task` construct and the `blur` method
-
-  ???
+    val ranges = this.parBlurRanges(src, numTasks)
+    val tasks = ranges.map((range: (Int, Int)) => task {
+      this.blur(src, dst, range._1, range._2, radius)
+    })
+    tasks.foreach((task) => task.join())
   }
-
 }

@@ -33,6 +33,18 @@ class BlurSuite extends FunSuite {
         s"but it's ${boxBlurKernel(src, 1, 2, 1)})")
   }
 
+  test("boxBlurKernel should return the correct value on an edge pixel") {
+    val src = new Img(3, 4)
+    src(0, 0) = 0; src(1, 0) = 1; src(2, 0) = 2
+    src(0, 1) = 3; src(1, 1) = 4; src(2, 1) = 5
+    src(0, 2) = 6; src(1, 2) = 7; src(2, 2) = 8
+    src(0, 3) = 50; src(1, 3) = 11; src(2, 3) = 16
+
+    assert(boxBlurKernel(src, 0, 0, 1) === 2,
+      s"(boxBlurKernel(0, 0, 1) should be 2, " +
+        s"but it's ${boxBlurKernel(src, 0, 0, 1)})")
+  }
+
   test("HorizontalBoxBlur.blur with radius 1 should correctly blur the entire 3x3 image") {
     val w = 3
     val h = 3
@@ -89,5 +101,52 @@ class BlurSuite extends FunSuite {
     check(3, 2, 6)
   }
 
+  test("Vertical parBlurRanges works as expected") {
+    val w = 4
+    val h = 32
+    val src = new Img(w, h)
+    assert(VerticalBoxBlur.parBlurRanges(src, 2) == List((0, 2), (2, 4)))
+  }
 
+  test("Vertical purBlurRanges should not produce OOB indexes") {
+    val w = 5
+    val h = 32
+    val src = new Img(w, h)
+    assert(VerticalBoxBlur.parBlurRanges(src, 2) == List((0, 2), (2, 4), (4, 5)))
+  }
+
+  test("Vertical parBlurRanges should never produce more than (width / numTasks) + 1 ranges") {
+    val w = 5
+    val h = 3
+    val src = new Img(w, h)
+    assert(VerticalBoxBlur.parBlurRanges(src, w) == List((0, 1), (1, 2), (2, 3), (3, 4), (4, 5)))
+  }
+
+  test("Horizontal parBlurRanges works as expected") {
+    val w = 33
+    val h = 4
+    val src = new Img(w, h)
+    assert(HorizontalBoxBlur.parBlurRanges(src, 2) == List((0, 2), (2, 4)))
+  }
+
+  test("Horizontal parBlurRanges should never produce more than (height / numTasks) + 1 ranges") {
+    val w = 3
+    val h = 37
+    val src = new Img(w, h)
+    assert(HorizontalBoxBlur.parBlurRanges(src, 1).length == 1)
+  }
+
+  test("Horizontal purBlurRanges should not produce OOB indexes") {
+    val w = 32
+    val h = 5
+    val src = new Img(w, h)
+    assert(HorizontalBoxBlur.parBlurRanges(src, 2) == List((0, 2), (2, 4), (4, 5)))
+  }
+
+  test("Horizontal parBlurRanges should not try to parallelize if there is only one task") {
+    val w = 33
+    val h = 5
+    val src = new Img(w, h)
+    assert(HorizontalBoxBlur.parBlurRanges(src, 1) == List((0, 5)))
+  }
 }

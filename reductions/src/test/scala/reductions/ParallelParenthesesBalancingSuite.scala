@@ -55,7 +55,7 @@ class ParallelParenthesesBalancingSuite extends FunSuite {
     check(((1, 0), (0, 0)), (1, 0))
     check(((1, 0), (0, 0)), (1, 0))
     check(((9, 1), (1, 0)), (9, 0))
-    check(((0, 1), (2, 1)), (9999, 9999))
+    check(((0, 1), (2, 1)), (0, 0))
   }
 
   test("parBalance should work for string of length 2 and threshold 1") {

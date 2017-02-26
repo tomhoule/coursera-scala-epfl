@@ -71,7 +71,7 @@ object LineOfSight {
   def upsweep(input: Array[Float], from: Int, end: Int, threshold: Int): Tree = {
     if ((end - from) <= threshold) Leaf(from, end, upsweepSequential(input, from, end))
     else {
-      val middle = from + ((end - from) / 2)
+      val middle = (end + from) / 2
       val (left, right) = parallel(upsweep(input, from, middle, threshold), upsweep(input, middle, end, threshold))
       Node(left, right)
     }
@@ -90,10 +90,10 @@ object LineOfSight {
     }
   }
 
-  def downsweepTraverse(input: Array[Float], output: Array[Float], idx: Int, until: Int, currentAngle: Float): Unit = {
+  def downsweepTraverse(input: Array[Float], output: Array[Float], idx: Int, until: Int, startingAngle: Float): Unit = {
     if (idx == until) return
     else {
-      val newAngle = if (idx == 0) currentAngle else max(currentAngle, input(idx) / idx)
+      val newAngle = if (idx == 0) 0 else max(input(idx) / idx, startingAngle)
       output(idx) = newAngle
       downsweepTraverse(input, output, idx + 1, until, newAngle)
     }
@@ -105,17 +105,19 @@ object LineOfSight {
    */
   def downsweep(input: Array[Float], output: Array[Float], startingAngle: Float, tree: Tree): Unit = {
     tree match {
-      case Leaf(from, until, maxPrevious) => downsweepTraverse(input, output, from, until, startingAngle)
+      case Leaf(from, until, _) => downsweepTraverse(input, output, from, until, startingAngle)
       case Node(left, right) => parallel(
-        downsweep(input, output, left.maxPrevious, left),
-        downsweep(input, output, right.maxPrevious, right)
+        downsweep(input, output, right.maxPrevious, left),
+        downsweep(input, output, left.maxPrevious, right)
       )
     }
   }
 
   /** Compute the line-of-sight in parallel. */
   def parLineOfSight(input: Array[Float], output: Array[Float], threshold: Int): Unit = {
-    val reductionTree = upsweep(input, 0, input.length, threshold)
+    val reductionTree = upsweep(input, 0, input.length - 1, threshold)
     downsweep(input, output, 0, reductionTree)
+    val lastInputIdx: Int = input.length - 1
+    output(lastInputIdx) = max(output(lastInputIdx - 1), input(lastInputIdx) / lastInputIdx)
   }
 }

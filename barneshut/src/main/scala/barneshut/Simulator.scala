@@ -12,11 +12,20 @@ import common._
 class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
 
   def updateBoundaries(boundaries: Boundaries, body: Body): Boundaries = {
-    ???
+    boundaries.maxX = math.max(boundaries.maxX, body.x)
+    boundaries.minX = math.min(boundaries.minX, body.x)
+    boundaries.maxY = math.max(boundaries.maxY, body.x)
+    boundaries.minY = math.min(boundaries.minY, body.x)
+    boundaries
   }
 
   def mergeBoundaries(a: Boundaries, b: Boundaries): Boundaries = {
-    ???
+    val fit = new Boundaries
+    fit.minX = math.min(a.minX, b.minX)
+    fit.maxX = math.max(a.maxX, b.maxX)
+    fit.minY = math.min(a.minY, b.minY)
+    fit.maxY = math.max(a.maxY, b.maxY)
+    fit
   }
 
   def computeBoundaries(bodies: Seq[Body]): Boundaries = timeStats.timed("boundaries") {
@@ -28,7 +37,10 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def computeSectorMatrix(bodies: Seq[Body], boundaries: Boundaries): SectorMatrix = timeStats.timed("matrix") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    ???
+    val sectorMatrix = new SectorMatrix(boundaries, SECTOR_PRECISION)
+    parBodies.aggregate(sectorMatrix)(
+      (sectorMatrix: SectorMatrix, body: Body) => sectorMatrix += body,
+      (a: SectorMatrix, b: SectorMatrix) => a.combine(b))
   }
 
   def computeQuad(sectorMatrix: SectorMatrix): Quad = timeStats.timed("quad") {
@@ -38,7 +50,8 @@ class Simulator(val taskSupport: TaskSupport, val timeStats: TimeStatistics) {
   def updateBodies(bodies: Seq[Body], quad: Quad): Seq[Body] = timeStats.timed("update") {
     val parBodies = bodies.par
     parBodies.tasksupport = taskSupport
-    ???
+    parBodies.map((b: Body) => b.updated(quad)).seq
+//    parBodies.aggregate(quad)((q: Quad, b: Body) => q.insert(b), (q: Quad, r: Quad) => q.insert(r))
   }
 
   def eliminateOutliers(bodies: Seq[Body], sectorMatrix: SectorMatrix, quad: Quad): Seq[Body] = timeStats.timed("eliminate") {

@@ -1,71 +1,60 @@
 name := course.value + "-" + assignment.value
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 scalacOptions ++= Seq("-deprecation")
 
+courseId := "e8VseYIYEeWxQQoymFg8zQ"
+
+resolvers += Resolver.sonatypeRepo("releases")
+
 // grading libraries
 libraryDependencies += "junit" % "junit" % "4.10" % "test"
-
-// for funsets
-libraryDependencies += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
+libraryDependencies ++= assignmentsMap.value.values.flatMap(_.dependencies).toSeq
 
 // include the common dir
 commonSourcePackages += "common"
 
-courseId := "bRPXgjY9EeW6RApRXdjJPw"
-
-// See documentation in ProgFunBuild.scala
 assignmentsMap := {
-  val styleSheetPath = (baseDirectory.value / ".." / ".." / "project" / "scalastyle_config.xml").getPath
+  val depsSpark = Seq(
+    "org.apache.spark" %% "spark-core" % "2.0.0"
+  )
   Map(
     "example" -> Assignment(
       packageName = "example",
-      key = "g4unnjZBEeWj7SIAC5PFxA",
-      itemId = "xIz9O",
-      partId = "d5jxI",
+      key = "9W3VuiJREeaFaw43_UrNUw",
+      itemId = "I6L8m",
+      partId = "vsJoj",
       maxScore = 10d,
-      styleScoreRatio = 0.2,
-      styleSheet = styleSheetPath),
-    "recfun" -> Assignment(
-      packageName = "recfun",
-      key = "SNYuDzZEEeWNVyIAC92BaQ",
-      itemId = "Ey6Jf",
-      partId = "PzVVY",
+      dependencies = Seq(),
+      options = Map("Xmx"->"1540m", "grader-memory"->"2048")),
+    "wikipedia" -> Assignment(
+      packageName = "wikipedia",
+      key = "EH8wby4kEeawURILfHIqjw",
+      itemId = "QcWcs",
+      partId = "5komc",
       maxScore = 10d,
-      styleScoreRatio = 0.2,
-      styleSheet = styleSheetPath),
-    "funsets" -> Assignment(
-      packageName = "funsets",
-      key = "FNHHMDfsEeWAGiIAC46PTg",
-      itemId = "BVa6a",
-      partId = "IljBE",
+      styleScoreRatio = 0.0,
+      dependencies = depsSpark,
+      options = Map("Xmx"->"1540m", "grader-memory"->"2048", "totalTimeout" -> "900", "grader-cpu" -> "2")),
+    "stackoverflow" -> Assignment(
+      packageName = "stackoverflow",
+      key = "7ByAoS4kEea1yxIfJA1CUw",
+      itemId = "FWGnz",
+      partId = "OY5fJ",
       maxScore = 10d,
-      styleScoreRatio = 0.2,
-      styleSheet = styleSheetPath),
-    "objsets" -> Assignment(
-      packageName = "objsets",
-      key = "6PTXvD99EeWAiCIAC7Pj9w",
-      itemId = "Ogg05",
-      partId = "7hlkb",
+      styleScoreRatio = 0.0,
+      dependencies = depsSpark,
+      options = Map("Xmx"->"1540m", "grader-memory"->"2048", "totalTimeout" -> "900", "grader-cpu" -> "2")),
+    "timeusage" -> Assignment(
+      packageName = "timeusage",
+      key = "mVk0fgQ0EeeGZQrYVAT1jg",
+      itemId = "T19Ec",
+      partId = "y8PO8CUSTOM",
       maxScore = 10d,
-      styleScoreRatio = 0.2,
-      styleSheet = styleSheetPath),
-    "patmat" -> Assignment(
-      packageName = "patmat",
-      key = "BwkTtD9_EeWFZSIACtiVgg",
-      itemId = "uctOq",
-      partId = "2KYZc",
-      maxScore = 10d,
-      styleScoreRatio = 0.2,
-      styleSheet = styleSheetPath),
-    "forcomp" -> Assignment(
-      packageName = "forcomp",
-      key = "CPJe397VEeWLGArWOseZkw",
-      itemId = "nVRPb",
-      partId = "v2XIe",
-      maxScore = 10d,
-      styleScoreRatio = 0.2,
-      styleSheet = styleSheetPath)
+      styleScoreRatio = 0.0,
+      dependencies = depsSpark :+ ("org.apache.spark" %% "spark-sql" % "2.0.0"),
+      options = Map("Xmx"->"1540m", "grader-memory"->"2048", "totalTimeout" -> "900", "grader-cpu" -> "2"))
   )
 }
+

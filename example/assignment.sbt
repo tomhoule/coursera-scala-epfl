@@ -1,2 +1,2 @@
-course := "progfun1"
+course := "bigdata"
 assignment := "example"

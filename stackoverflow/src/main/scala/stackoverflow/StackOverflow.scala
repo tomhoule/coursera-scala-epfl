@@ -78,7 +78,9 @@ class StackOverflow extends Serializable {
 
   /** Group the questions and answers together */
   def groupedPostings(postings: RDD[Posting]): RDD[(Int, Iterable[(Posting, Posting)])] = {
-    ???
+    val questions: RDD[(Int, Posting)] = postings.filter(_.postingType == 1).map(question => (question.id, question))
+    val answers: RDD[(Int, Posting)] = postings.filter(_.postingType == 2).map(answer => (answer.parentId.get, answer))
+    questions.join(answers).groupByKey().cache()
   }
 
 
@@ -97,7 +99,7 @@ class StackOverflow extends Serializable {
       highScore
     }
 
-    ???
+    grouped.map { case (_, qas) => (qas.head._1, answerHighScore(qas.map(_._2).toArray)) }.cache()
   }
 
 
@@ -117,7 +119,14 @@ class StackOverflow extends Serializable {
       }
     }
 
-    ???
+    scored.flatMap {
+      case (posting, score) => {
+        firstLangInTag(posting.tags, langs) match {
+          case None => None
+          case Some(langIndex) => List((langIndex * langSpread, score))
+        }
+      }
+    }.cache()
   }
 
 
@@ -273,10 +282,20 @@ class StackOverflow extends Serializable {
     val closestGrouped = closest.groupByKey()
 
     val median = closestGrouped.mapValues { vs =>
-      val langLabel: String   = ??? // most common language in the cluster
-      val langPercent: Double = ??? // percent of the questions in the most common language
-      val clusterSize: Int    = ???
-      val medianScore: Int    = ???
+      val langLabel: String   = langs(vs.maxBy(_._2)._1) // most common language in the cluster
+      val langIndex: Int = langs.indexOf(langLabel)
+      val totalQuestions = vs.map(_._2).sum
+      val langPercent: Double = vs.filter(_._1 == langIndex).map(_._2).sum / totalQuestions // percent of the questions in the most common language
+      val clusterSize: Int    = vs.size
+      val medianScore: Int    = 0
+//      {
+//        val sorted = vs.toList.sortBy(_._2)
+//        if (sorted.size % 2 != 0) sorted(sorted.size / 2)._2
+//        else {
+//          val beforeMedian = sorted.size / 2
+//          (sorted(beforeMedian)._2 + sorted(beforeMedian + 1)._2) / 2
+//        }
+//      }
 
       (langLabel, langPercent, clusterSize, medianScore)
     }

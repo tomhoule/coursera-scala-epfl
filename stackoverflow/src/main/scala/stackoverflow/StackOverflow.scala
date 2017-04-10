@@ -122,14 +122,16 @@ class StackOverflow extends Serializable {
       }
     }
 
-    scored.flatMap {
+    val vectors = scored.flatMap {
       case (posting, score) => {
         firstLangInTag(posting.tags, langs) match {
           case None => None
           case Some(lang) => Some((lang * langSpread, score))
         }
       }
-    }.cache()
+    }
+
+    vectors.cache()
   }
 
 
@@ -184,19 +186,16 @@ class StackOverflow extends Serializable {
 
   /** Main kmeans computation */
   @tailrec final def kmeans(means: Array[(Int, Int)], vectors: RDD[(Int, Int)], iter: Int = 1, debug: Boolean = false): Array[(Int, Int)] = {
-    val newMeans: Array[(Int, Int)] = {
-      // (Index, Iterable[vec])
-      val newClusters = vectors
-          .map(vec => (findClosest(vec, means), vec))
-          .groupByKey()
-          .mapValues(averageVectors)
-          .collectAsMap()
-      means.indices.map(index => newClusters.getOrElse(index, means(index))).toArray
+    val newMeans: Array[(Int, Int)] = means.clone()
+    val newClusters =  vectors
+      .map(vec => (findClosest(vec, means), vec))
+      .groupByKey()
+      .mapValues(averageVectors)
+      .collect()
+
+    newClusters.foreach {
+      case (index, newMean) => newMeans(index) = newMean
     }
-//    {
-//      val newClusters = vectors.map(findClosest(_, means)).collectAsMap()
-//      means.indices.map(index => averageVectors(newClusters.getOrElse(index, List(0, 0)))).toArray
-//    }
 
     val distance = euclideanDistance(means, newMeans)
 
@@ -243,8 +242,8 @@ class StackOverflow extends Serializable {
 
   /** Return the euclidean distance between two points */
   def euclideanDistance(a1: Array[(Int, Int)], a2: Array[(Int, Int)]): Double = {
-    assert(a1.length == a2.length)
-    assert(!a1.sameElements(a2))
+//    assert(a1.length == a2.length)
+//    assert(!a1.sameElements(a2))
     var sum = 0d
     var idx = 0
     while(idx < a1.length) {
@@ -284,7 +283,11 @@ class StackOverflow extends Serializable {
     ((comp1 / count).toInt, (comp2 / count).toInt)
   }
 
-
+  def medianOf(arr: Array[(Int, Int)]): Int = {
+    val len = arr.length
+    if (len % 2 != 0) arr(len / 2)._2
+    else (arr(len / 2)._2 + arr((len / 2) - 1)._2) / 2
+  }
 
 
   //
@@ -306,14 +309,13 @@ class StackOverflow extends Serializable {
         if (clusterSize == 0) 0
         else {
           val sorted = vs.toArray.sortBy(_._2)
-          val lastIndex = clusterSize - 1
-          if (lastIndex == 1) sorted(0)._2
-          else if (lastIndex % 2 != 0) sorted(lastIndex / 2)._2
-          else (sorted(lastIndex / 2)._2 + sorted((lastIndex / 2) + 1)._2) / 2
+          medianOf(sorted)
         }
       }
 
-      (langLabel, langPercent, clusterSize, medianScore)
+      val result = (langLabel, langPercent, clusterSize, medianScore)
+      println(result)
+      result
     }
 
     median.collect().map(_._2).sortBy(_._4)

@@ -36,13 +36,20 @@ class StackOverflowSuite extends FunSuite with BeforeAndAfterAll {
     assert(instantiatable, "Can't instantiate a StackOverflow object")
   }
 
-  test("scored should have 2121822 entries") {
-    val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
-    val raw     = testObject.rawPostings(lines)
-    assert(raw.count() == 8143801, "Incorrect number of raw: " + raw.count())
-    val grouped = testObject.groupedPostings(raw)
-    assert(grouped.count() == 2121822, "Incorrect number of grouped: " + grouped.count())
-    val scored  = testObject.scoredPostings(grouped)
-    assert(scored.count() == 2121822, "Incorrect number of scored: " + scored.count())
+  new StackOverflow {
+    test("medianOf") {
+      assert(medianOf(List((0, 1), (0, 2), (0, 3)).toArray) === 2)
+      assert(medianOf(List((0, 1), (0, 2), (0, 3), (0, 4)).toArray) === 2)
+    }
   }
+//
+//  test("scored should have 2121822 entries") {
+//    val lines   = sc.textFile("src/main/resources/stackoverflow/stackoverflow.csv")
+//    val raw     = testObject.rawPostings(lines)
+//    assert(raw.count() == 8143801, "Incorrect number of raw: " + raw.count())
+//    val grouped = testObject.groupedPostings(raw)
+//    assert(grouped.count() == 2121822, "Incorrect number of grouped: " + grouped.count())
+//    val scored  = testObject.scoredPostings(grouped)
+//    assert(scored.count() == 2121822, "Incorrect number of scored: " + scored.count())
+//  }
 }

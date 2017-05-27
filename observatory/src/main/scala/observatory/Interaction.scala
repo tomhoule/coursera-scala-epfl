@@ -16,12 +16,12 @@ object Interaction {
   def tileLocation(zoom: Int, x: Int, y: Int): Location = {
     // The map is a square with side length mapSide
     val mapSide = Math.pow(2, zoom)
-    val lon_deg = x / mapSide * 360.0 - 180.0
-    val lat_rad = Math.atan(Math.sinh(Math.PI * (1.0 - 2.0 * y / mapSide)))
-    val lat_deg = lat_rad * 180 / Math.PI
+    val lonDeg = x / mapSide * 360.0 - 180.0
+    val latRad = Math.atan(Math.sinh(Math.PI * (1.0 - 2.0 * y / mapSide)))
+    val latDeg = latRad * 180 / Math.PI
     // val lat = Math.atan(Math.sinh(Math.PI * (1.0 - 2.0 * y / mapSide))).toDegrees
     // val lon = (x / mapSide) * 360 - 180
-    Location(lat_deg, lon_deg)
+    Location(latDeg, lonDeg)
   }
 
   /**
@@ -43,14 +43,14 @@ object Interaction {
       Pixel(color.red, color.green, color.blue, 127)
     }
 
-    val selfLocation = tileLocation(zoom, x, y)
     val side = Math.pow(2, zoom).toInt
-
     val pixels: Array[Pixel] = new Array(256 * 256)
 
     for (row <- 0 until 256) {
       for (col <- 0 until 256) {
-        val pixelLocation = tileLocation(zoom + 8, selfLocation.lon.toInt + col, selfLocation.lat.toInt + row)
+        val pixelX = if (col == 0) x else x + col / 256
+        val pixelY = if (row == 0) y else y + row / 256
+        val pixelLocation = tileLocation(zoom + 8, pixelX, pixelY)
         val pixelTemperature = Visualization.predictTemperature(temperatures, pixelLocation)
         val pixelColor = Visualization.interpolateColor(colors, pixelTemperature)
         pixels((256 * row) + col) = pixel(pixelColor)

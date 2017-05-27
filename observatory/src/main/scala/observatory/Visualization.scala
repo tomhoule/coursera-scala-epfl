@@ -9,7 +9,7 @@ object Visualization {
 
   val p: Double = 2
 
-  val radiusOfEarth = 6371 // km
+  val radiusOfEarth = 6367 // km
 
   def gpsToRadians(value: Double): Double = {
     (Math.PI/180) * value

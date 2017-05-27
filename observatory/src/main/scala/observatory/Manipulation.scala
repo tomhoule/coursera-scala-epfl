@@ -5,13 +5,26 @@ package observatory
   */
 object Manipulation {
 
+  object Grid {
+    val width = 360
+    val height = 180
+    val origin = (0, 0)
+
+    def gridCoordinatesToLocation(gridLat: Int, gridLon: Int): Location = {
+      Location((height / 2) - gridLat, - (width / 2) + gridLon)
+    }
+  }
+
   /**
     * @param temperatures Known temperatures
     * @return A function that, given a latitude in [-89, 90] and a longitude in [-180, 179],
     *         returns the predicted temperature at this location
     */
   def makeGrid(temperatures: Iterable[(Location, Double)]): (Int, Int) => Double = {
-    ???
+
+    // val locationOnGrid = 
+    (lat, lon) =>
+      Visualization.predictTemperature(temperatures, Grid.gridCoordinatesToLocation(lat, lon))
   }
 
   /**

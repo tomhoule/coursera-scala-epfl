@@ -33,22 +33,28 @@ object Interaction {
     * @return A 256×256 image showing the contents of the tile defined by `x`, `y` and `zooms`
     */
   def tile(temperatures: Iterable[(Location, Double)], colors: Iterable[(Double, Color)], zoom: Int, x: Int, y: Int): Image = {
+    System.err.println(temperatures)
+    System.err.println(colors)
+    System.err.println(zoom)
+    System.err.println(x)
+    System.err.println(y)
+
     def pixel(color: Color): Pixel = {
       Pixel(color.red, color.green, color.blue, 127)
     }
 
-    val origin: Location = tileLocation(zoom, x, y)
+    val selfLocation = tileLocation(zoom, x, y)
     val side = Math.pow(2, zoom).toInt
 
     val pixels: Array[Pixel] = new Array(256 * 256)
 
-    for (i <- 0 until pixels.length) {
-      val pixelX = origin.lon + Math.round(Math.floor(i / 256))
-      val pixelY = if (origin.lat > 0) Math.abs(origin.lat) - (i % 256) else -(Math.abs(origin.lat) - (i % 256))
-      val pixelLocation = tileLocation(zoom + 8, pixelX.toInt, pixelY.toInt)
-      val pixelTemperature = Visualization.predictTemperature(temperatures, pixelLocation)
-      val pixelColor = Visualization.interpolateColor(colors, pixelTemperature)
-      pixels(i) = pixel(pixelColor)
+    for (row <- 0 until 256) {
+      for (col <- 0 until 256) {
+        val pixelLocation = tileLocation(zoom + 8, selfLocation.lon.toInt + col, selfLocation.lat.toInt + row)
+        val pixelTemperature = Visualization.predictTemperature(temperatures, pixelLocation)
+        val pixelColor = Visualization.interpolateColor(colors, pixelTemperature)
+        pixels((256 * row) + col) = pixel(pixelColor)
+      }
     }
 
     Image(256, 256, pixels)
@@ -68,16 +74,12 @@ object Interaction {
     System.err.println(yearlyData)
     for (year <- yearlyData) {
       for (zoomLevel <- 0 to 3) {
-        val zoomedTiles: Int = Math.pow(2, zoomLevel).toInt
-        for (tileX <- 0 until zoomedTiles - 1) {
-          for (tileY <- 0 until zoomedTiles - 1) {
+        val tilesNo: Int = Math.pow(2, zoomLevel).toInt
+        for (tileX <- 0 until tilesNo) {
+          for (tileY <- 0 until tilesNo) {
             generateImage(year._1, zoomLevel, tileX, tileY, year._2)
           }
         }
-          // val tileX = tileIdx % zoomedTiles
-          // val tileY = tileIdx * Math.floor(tileIdx / zoomedTiles).toInt
-          // generateImage(year._1, zoomLevel, tileX, tileY, year._2)
-        // }
       }
     }
   }

@@ -11,15 +11,6 @@ object Visualization {
 
   val radiusOfEarth = 6371 // km
 
-  def absoluteDifference(a: Double, b: Double): Double = {
-    val absA = Math.abs(a)
-    val absB = Math.abs(b)
-    if (absA > absB)
-      absA - absB
-    else
-      absB - absA
-  }
-
   def gpsToRadians(value: Double): Double = {
     (Math.PI/180) * value
   }
@@ -67,11 +58,10 @@ object Visualization {
     * @return The color that corresponds to `value`, according to the color scale defined by `points`
     */
   def interpolateColor(points: Iterable[(Double, Color)], value: Double): Color = {
-    val sortedPoints = points.toIndexedSeq.sortBy(_._1)
     var previous = points.minBy(_._1)
     var next = points.maxBy(_._1)
 
-    for (point <- sortedPoints) {
+    for (point <- points) {
       if (point._1 == value)
         return point._2
       if (point._1 <= value && point._1 > previous._1)

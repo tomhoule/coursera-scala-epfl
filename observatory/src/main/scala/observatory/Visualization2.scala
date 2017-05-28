@@ -25,7 +25,10 @@ object Visualization2 {
     d10: Double,
     d11: Double
   ): Double = {
-    ???
+    d00 * (1 - x) * (1 - y) +
+    d10 * x * (1 - y) +
+    d01 * (1 - x) * y +
+    d11 * x * y
   }
 
   /**
@@ -43,7 +46,32 @@ object Visualization2 {
     x: Int,
     y: Int
   ): Image = {
-    ???
+    def pixel(color: Color): Pixel = {
+      Pixel(color.red, color.green, color.blue, 127)
+    }
+
+    val tileSize = Math.pow(2, zoom)
+    val pixels: Array[Pixel] = new Array(256 * 256)
+    for (row <- 0 until 256) {
+      for (col <- 0 until 256) {
+        val zoomedSide = Math.pow(2, zoom)
+        val pixelX: Double = x + (col / zoomedSide)
+        val pixelY: Double = y + (row / zoomedSide)
+        val topLeft: (Int, Int) = (Math.floor(pixelX).toInt, Math.floor(pixelY).toInt)
+        val bottomRight: (Int, Int) = (Math.ceil(pixelX).toInt, Math.ceil(pixelY).toInt)
+        val pixelValue: Double = bilinearInterpolation(
+          pixelX,
+          pixelY,
+          grid(topLeft._1, topLeft._2),
+          grid(topLeft._1, bottomRight._2),
+          grid(bottomRight._1, topLeft._2),
+          grid(bottomRight._1, bottomRight._2))
+        val pixelColor = Visualization.interpolateColor(colors, pixelValue)
+        pixels((256 * row) + col) = pixel(pixelColor)
+      }
+    }
+
+    Image(256, 256, pixels)
   }
 
 }

@@ -48,7 +48,7 @@ object Manipulation {
   def deviation(temperatures: Iterable[(Location, Double)], normals: (Int, Int) => Double): (Int, Int) => Double = {
     (lat, lon) => {
       val loc = Location(lat, lon)
-      val observed = temperatures.find(loc == _._1).map(_._2).get
+      val observed = temperatures.find(loc == _._1).map(_._2).getOrElse(9999.9)
       val normal = normals(lat, lon)
       observed - normal
     }
